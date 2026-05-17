@@ -1,6 +1,12 @@
 # WeChat-iLink Bridge
 
-WeChat-iLink Bridge（`wxb`）是一个面向 AI Agent 的微信 iLink 本地桥接 CLI。当前 M12 beta 版本在 M11 P1 发送侧能力基础上进入 npm beta 分发验证：`wxb send` 支持文本、文件、图片和可选 typing 状态，上传密钥和 CDN URL 继续只在 bridge 内部流转。
+[![CI](https://github.com/DONGH4O/wechat-ilink-bridge/actions/workflows/ci.yml/badge.svg)](https://github.com/DONGH4O/wechat-ilink-bridge/actions/workflows/ci.yml)
+
+License: [MIT](LICENSE)
+
+Public npm bin 只公开稳定 CLI bin `wxb`；`wxb-spike` 不作为公开 bin 发布。
+
+WeChat-iLink Bridge（`wxb`）是一个面向 AI Agent 的微信 iLink 本地桥接 CLI。当前公开版本为 M12 npm beta，M13 稳定版候选准备已完成：`wxb send` 支持文本、文件、图片和可选 typing 状态，跨平台 GitHub Actions CI 已通过，上传密钥和 CDN URL 继续只在 bridge 内部流转。
 
 ## P0 能力范围
 
@@ -38,8 +44,6 @@ WeChat-iLink Bridge（`wxb`）是一个面向 AI Agent 的微信 iLink 本地桥
 - 本地文件不存在、目录路径、超过 `WX_MAX_UPLOAD_BYTES`、未知 MIME 或图片模式传入非图片文件时返回结构化错误。
 - stdout 不输出上传 URL、AES key、签名 query、bot token 或 context token。
 
-
-
 ## 从源码安装
 
 Windows PowerShell：
@@ -60,7 +64,7 @@ wxb help
 
 ## npm Beta 安装
 
-当前公开 beta 可用 beta tag 安装：
+当前公开 beta 已可通过 `@dongh4o/wechat-ilink-bridge@beta` 安装：
 
 ```powershell
 npm.cmd install -g @dongh4o/wechat-ilink-bridge@beta
@@ -79,8 +83,9 @@ wxb status --json
 
 ## 稳定版准备状态
 
-- GitHub Actions CI 将覆盖 Windows、Ubuntu、macOS 和 Node.js 18/20/22。
-- `0.1.0` stable 发布前会先确认 CI 全平台通过、README 安装路径可用、`CHANGELOG.md` 增加稳定版条目、GitHub Release 与 npm 版本一致。
+- M13 稳定版候选准备已完成，GitHub Actions CI 已在 Windows 2025、Ubuntu、macOS 和 Node.js 18/20/22 上通过。
+- 最新 M13 CI 验证记录见 `docs/m13-validation-report.md`。
+- `0.1.0` stable 发布仍需人工确认后再执行 version bump、`CHANGELOG.md` 稳定版条目、Git tag、GitHub Release 和 npm stable publish。
 - 安装、登录、发送、媒体和状态文件的常见问题见 `docs/troubleshooting.md`。
 
 macOS/Linux：
