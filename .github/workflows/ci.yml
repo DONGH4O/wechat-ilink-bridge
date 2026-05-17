@@ -18,7 +18,7 @@ jobs:
       fail-fast: false
       matrix:
         os:
-          - windows-latest
+          - windows-2025
           - ubuntu-latest
           - macos-latest
         node:
@@ -27,10 +27,10 @@ jobs:
           - 22.x
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ matrix.node }}
           registry-url: https://registry.npmjs.org

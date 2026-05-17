@@ -6,14 +6,14 @@ test("GitHub Actions CI covers M13 platform and Node matrix", async () => {
   const workflow = await readFile(".github/workflows/ci.yml", "utf8");
 
   assert.match(workflow, /name: CI/);
-  assert.match(workflow, /windows-latest/);
+  assert.match(workflow, /windows-2025/);
   assert.match(workflow, /ubuntu-latest/);
   assert.match(workflow, /macos-latest/);
   assert.match(workflow, /18\.x/);
   assert.match(workflow, /20\.x/);
   assert.match(workflow, /22\.x/);
-  assert.match(workflow, /actions\/checkout@v4/);
-  assert.match(workflow, /actions\/setup-node@v4/);
+  assert.match(workflow, /actions\/checkout@v6/);
+  assert.match(workflow, /actions\/setup-node@v6/);
   assert.match(workflow, /npm test/);
   assert.match(workflow, /npm pack --dry-run/);
 });
