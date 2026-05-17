@@ -38,14 +38,7 @@ WeChat-iLink Bridge（`wxb`）是一个面向 AI Agent 的微信 iLink 本地桥
 - 本地文件不存在、目录路径、超过 `WX_MAX_UPLOAD_BYTES`、未知 MIME 或图片模式传入非图片文件时返回结构化错误。
 - stdout 不输出上传 URL、AES key、签名 query、bot token 或 context token。
 
-## 发布状态
 
-- 当前版本为 `0.1.0-beta.1` npm beta 包，已可通过 `@dongh4o/wechat-ilink-bridge@beta` 安装。
-- 包名为 `@dongh4o/wechat-ilink-bridge`；npm scope `@dongh4o` 已存在，发布前需确认当前 npm 账号有该 scope 的发布权限。
-- GitHub 仓库目标为 `DONGH4O/wechat-ilink-bridge`。
-- `LICENSE` 当前按 MIT 落地。
-- npm 全局安装后只公开稳定 CLI bin `wxb`；`wxb-spike` 不作为公开 bin 发布，协议 spike helper 仅保留为源码仓库维护脚本。
-- npm 包内容由 `package.json.files` 和 `.npmignore` 共同约束，默认不包含 `.env`、本地状态目录、真实 stdout 捕获、测试目录或包归档。
 
 ## 从源码安装
 
