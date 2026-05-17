@@ -1,0 +1,25 @@
+{
+  "ret": 0,
+  "msgs": [
+    {
+      "msg_id": "msg_voice_001",
+      "from_user_id": "user_opaque_003",
+      "context_token": "ctx_voice_001_should_not_escape",
+      "item_list": [
+        {
+          "type": 34,
+          "voice_item": {
+            "file_id": "voice_file_001",
+            "file_name": "sample-voice.silk",
+            "mime_type": "audio/silk",
+            "size": 1024,
+            "duration_ms": 3200,
+            "cdn_url": "https://novac2c.cdn.weixin.qq.com/c2c/sample-voice"
+          }
+        }
+      ],
+      "timestamp": 1715000200
+    }
+  ],
+  "get_updates_buf": "cursor_004"
+}

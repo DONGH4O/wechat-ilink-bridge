@@ -1,0 +1,44 @@
+{
+  "name": "@dongh4o/wechat-ilink-bridge",
+  "version": "0.1.0-beta.0",
+  "private": true,
+  "type": "module",
+  "description": "Local WeChat iLink Bridge CLI for Agent-safe fetch, send, state, and media handoff workflows.",
+  "keywords": [
+    "wechat",
+    "ilink",
+    "bot",
+    "cli",
+    "agent"
+  ],
+  "bin": {
+    "wxb": "./src/cli/index.js"
+  },
+  "files": [
+    "src/",
+    "skills/",
+    "docs/",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "node --test",
+    "test:unit": "node --test test/unit",
+    "pack:dry-run": "npm pack --dry-run",
+    "spike": "node scripts/protocol-spike.js",
+    "spike:normalize": "node scripts/protocol-spike.js normalize"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DONGH4O/wechat-ilink-bridge.git"
+  },
+  "bugs": {
+    "url": "https://github.com/DONGH4O/wechat-ilink-bridge/issues"
+  },
+  "homepage": "https://github.com/DONGH4O/wechat-ilink-bridge#readme",
+  "license": "MIT"
+}

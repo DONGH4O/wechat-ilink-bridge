@@ -1,0 +1,37 @@
+{
+  "ret": 0,
+  "msgs": [
+    {
+      "message_id": "msg_mixed_001",
+      "from_user_id": "user_opaque_002",
+      "to_user_id": "bot_owner_001",
+      "context_token": "ctx_mixed_001_should_not_escape",
+      "item_list": [
+        {
+          "type": 1,
+          "text_item": {
+            "text": "image caption"
+          }
+        },
+        {
+          "type": 3,
+          "image_item": {
+            "file_id": "image_file_001",
+            "file_name": "sample-image.jpg",
+            "mime_type": "image/jpeg",
+            "size": 2048,
+            "cdn_url": "https://novac2c.cdn.weixin.qq.com/c2c/sample-image",
+            "aeskey": "00112233445566778899aabbccddeeff",
+            "md5": "0123456789abcdef0123456789abcdef",
+            "width": 640,
+            "height": 480
+          }
+        }
+      ],
+      "message_type": 2,
+      "message_state": 2,
+      "create_time_ms": 1715000100123
+    }
+  ],
+  "get_updates_buf": "cursor_003"
+}

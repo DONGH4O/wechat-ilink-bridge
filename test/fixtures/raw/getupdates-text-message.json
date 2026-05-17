@@ -1,0 +1,23 @@
+{
+  "ret": 0,
+  "msgs": [
+    {
+      "msg_id": "msg_text_001",
+      "from_user_id": "user_opaque_001",
+      "to_user_id": "bot_owner_001",
+      "context_token": "ctx_text_001_should_not_escape",
+      "item_list": [
+        {
+          "type": 1,
+          "text_item": {
+            "text": "hello from fixture"
+          }
+        }
+      ],
+      "message_type": 2,
+      "message_state": 2,
+      "timestamp": 1715000000
+    }
+  ],
+  "get_updates_buf": "cursor_002"
+}

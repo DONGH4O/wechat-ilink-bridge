@@ -1,0 +1,7 @@
+{
+  "status": "confirmed",
+  "bot_token": "bot_token_fixture_should_not_escape",
+  "ilink_bot_id": "bot_fixture_001",
+  "ilink_user_id": "bot_owner_001",
+  "baseurl": "https://ilinkai.weixin.qq.com"
+}

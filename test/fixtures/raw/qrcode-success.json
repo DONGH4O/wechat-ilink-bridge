@@ -1,0 +1,5 @@
+{
+  "qrcode": "qr_fixture_token_001",
+  "qrcode_img_content": "https://weixin.qq.com/cgi-bin/mmwebwx-bin/webwxnewloginpage?ticket=fixture",
+  "qrcode_img_url": "https://api.qrserver.com/v1/create-qr-code/?data=fixture"
+}

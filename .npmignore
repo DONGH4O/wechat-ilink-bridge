@@ -1,0 +1,12 @@
+node_modules/
+.env
+.env.*
+coverage/
+.wxb/
+*.log
+*.tgz
+*.stdout.json
+m*-*.stdout.json
+test/
+test/fixtures/raw/live-*.json
+你的真实测试状态目录/
