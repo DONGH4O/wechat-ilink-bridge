@@ -1,6 +1,6 @@
 # Release Process
 
-> Status: M9 local release framework.  
+> Status: M12 npm beta release path.
 > Scope: This document defines the manual release path before GitHub automation exists.
 
 ## 1. Version Policy
@@ -18,15 +18,15 @@ Pre-release versions:
 - `0.1.0`: first stable P1 release.
 - `0.2.0`: first P2 adapter or optional multimodal helper release.
 
-Current M9 draft:
+Current M12 beta candidate:
 
-- Version: `0.1.0-beta.0`.
+- Version: `0.1.0-beta.1`.
 - Package name: `@dongh4o/wechat-ilink-bridge`.
 - npm scope: `@dongh4o` exists.
 - License: MIT in `LICENSE`.
 - Repository: `DONGH4O/wechat-ilink-bridge`.
 
-Do not publish while `package.json.private` is `true`. Keep it true until the publishing account has access to the `@dongh4o` scope and the public repository is ready.
+Do not run `npm publish` until the publishing account has access to the `@dongh4o` scope and the release candidate has passed local `.tgz` install smoke. Do not publish while `package.json.private` is `true`.
 
 ## 2. Required Decisions Before Public Release
 
@@ -120,6 +120,15 @@ wxb help
 wxb status --json
 ```
 
+For local smoke without changing the user's global prefix, use a temporary prefix:
+
+```powershell
+$prefix="C:\tmp\wxb-m12-global"
+npm.cmd install -g --prefix $prefix .\dongh4o-wechat-ilink-bridge-0.1.0-beta.1.tgz
+& "$prefix\wxb.cmd" help
+& "$prefix\wxb.cmd" status --json --state-dir "C:\tmp\wxb-m12-smoke-state"
+```
+
 3. Publish beta:
 
 ```powershell
@@ -139,3 +148,25 @@ Before `0.1.0`:
 5. Tag the release.
 6. Publish npm stable.
 7. Create a GitHub Release with the changelog summary.
+
+Stable release checklist:
+
+```powershell
+npm.cmd test
+npm.cmd run pack:dry-run
+npm.cmd version 0.1.0 --no-git-tag-version
+npm.cmd pack
+npm.cmd install -g --prefix C:\tmp\wxb-stable-global .\dongh4o-wechat-ilink-bridge-0.1.0.tgz
+& C:\tmp\wxb-stable-global\wxb.cmd help
+& C:\tmp\wxb-stable-global\wxb.cmd status --json --state-dir C:\tmp\wxb-stable-smoke-state
+```
+
+After the version bump and smoke pass:
+
+```powershell
+git tag v0.1.0
+npm publish --access public
+npm.cmd view @dongh4o/wechat-ilink-bridge@latest name version dist-tags bin --json
+```
+
+Only publish stable after GitHub Actions CI has passed on Windows, Ubuntu, macOS, and Node.js 18/20/22.

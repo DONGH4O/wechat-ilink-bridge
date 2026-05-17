@@ -1,8 +1,8 @@
 # WeChat-iLink Bridge 后续里程碑规划
 
 > 日期：2026-05-17  
-> 基线：M0-M8 已完成，当前版本为 M8/P1 媒体下载保存能力。  
-> 目标：先把发布、版本、源码分发边界稳住，再补齐剩余 P1 发送侧能力，最后进入 P2 适配层与多模态增强。
+> 基线：M0-M11 已完成，当前版本为 M11/P1 媒体发送侧补齐能力。
+> 目标：进入 npm beta 分发验证，再打磨 P1 稳定版，最后进入 P2 适配层与多模态增强。
 
 ## 1. 当前判断
 
@@ -11,6 +11,7 @@ M8 之后项目已经具备可被 Agent 使用的核心闭环：
 - 入站消息可通过 `wxb fetch --json` 交付给 Agent。
 - 文本回复可通过 `wxb send --text/--stdin` 发送。
 - 图片、文件、语音、视频可通过 `wxb fetch --download-media` 下载到本地 inbox，并以附件绝对路径交付给 Agent。
+- 文件和图片可通过 `wxb send --file/--image` 发送，可选 `--typing` 展示输入状态。
 - bot token、context token、CDN URL、AES key 等敏感值仍由 bridge 本地管理，不进入 Agent stdout。
 
 下一阶段不应优先把语音转写、图片理解、视频摘要等模型能力写进 core library。bridge 的边界应保持为：协议适配、状态安全、媒体收发、文件落盘、Agent 友好的结构化接口。多模态理解优先由 Agent 或 P2 adapter 调用外部模型能力完成。
@@ -107,6 +108,8 @@ M8 之后项目已经具备可被 Agent 使用的核心闭环：
 
 ## 6. M11 P1 发送侧补齐
 
+状态：已完成。自动化 mock 验收、`npm pack --dry-run` 和真实接口文件/图片发送冒烟均已通过，详见 `docs/m11-validation-report.md`。
+
 目标：把 P1 从“媒体可接收”补齐到“媒体可发送”，并补齐 typing 状态。
 
 任务：
@@ -138,9 +141,12 @@ M8 之后项目已经具备可被 Agent 使用的核心闭环：
 - 本地文件不存在、目录路径、超大文件、未知 MIME 返回结构化错误。
 - 上传成功后返回安全元数据和 `clientId`。
 - 部分失败不会误报成功。
-- `npm.cmd test` 通过。
+- `npm.cmd test` 通过，当前为 124 项测试通过。
+- `npm.cmd run pack:dry-run` 通过，M11 新增文件进入包内容清单。
 
 ## 7. M12 npm beta 分发
+
+状态：已完成。`0.1.0-beta.1` 已发布到 npm，`@dongh4o/wechat-ilink-bridge@beta` 安装 smoke 已通过，详见 `docs/m12-validation-report.md`。
 
 目标：发布可安装、可回滚的 beta 包，验证真实用户安装路径。
 
@@ -158,12 +164,14 @@ M8 之后项目已经具备可被 Agent 使用的核心闭环：
 
 验收：
 
-- npm 页面可访问。
-- `npm install -g @<scope>/wechat-ilink-bridge@beta` 可安装。
+- npm 页面可访问，`beta` dist-tag 指向 `0.1.0-beta.1`。
+- `npm install -g @dongh4o/wechat-ilink-bridge@beta` 可安装。
 - `wxb` bin 在 Windows PowerShell 可执行。
 - README beta 安装路径与源码路径都可用。
 
 ## 8. M13 P1 稳定版
+
+状态：稳定版候选准备已完成本地部分。CI matrix、稳定版准备文档、故障排查文档和本地验收已落地；`0.1.0` stable 发布需等待 GitHub CI 真实跑绿并人工确认。
 
 目标：把 beta 收敛为第一个稳定公开版本。
 

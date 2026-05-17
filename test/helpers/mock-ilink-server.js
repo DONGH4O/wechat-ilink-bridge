@@ -12,6 +12,15 @@ export async function startMockIlinkServer(options = {}) {
   ])];
   const getUpdatesResponses = [...(options.getUpdatesResponses ?? [])];
   const sendMessageResponses = [...(options.sendMessageResponses ?? [{ ret: 0 }])];
+  const getUploadUrlResponses = [...(options.getUploadUrlResponses ?? [{ ret: 0, upload_param: "upload_param_fixture" }])];
+  const uploadResponses = options.uploadResponses ?? {
+    "/upload": {
+      headers: { "x-encrypted-param": "download_param_fixture" },
+      body: { ret: 0 }
+    }
+  };
+  const getConfigResponses = [...(options.getConfigResponses ?? [{ ret: 0, typing_ticket: "typing_ticket_fixture" }])];
+  const sendTypingResponses = [...(options.sendTypingResponses ?? [{ ret: 0 }])];
   const mediaResponses = options.mediaResponses ?? {};
 
   const server = http.createServer(async (req, res) => {
@@ -20,13 +29,20 @@ export async function startMockIlinkServer(options = {}) {
     for await (const chunk of req) {
       chunks.push(chunk);
     }
-    const rawBody = Buffer.concat(chunks).toString("utf8");
-    const body = rawBody ? JSON.parse(rawBody) : undefined;
+    const rawBuffer = Buffer.concat(chunks);
+    const rawBody = rawBuffer.toString("utf8");
+    const contentType = String(req.headers["content-type"] ?? "");
+    const body = rawBuffer.length === 0
+      ? undefined
+      : contentType.includes("application/json")
+        ? JSON.parse(rawBody)
+        : rawBuffer;
     requests.push({
       method: req.method,
       pathname: url.pathname,
       searchParams: Object.fromEntries(url.searchParams.entries()),
       headers: req.headers,
+      rawBody,
       body
     });
 
@@ -53,6 +69,41 @@ export async function startMockIlinkServer(options = {}) {
 
     if (req.method === "POST" && url.pathname === "/ilink/bot/sendmessage") {
       const response = sendMessageResponses.length > 1 ? sendMessageResponses.shift() : sendMessageResponses[0];
+      const status = response?.httpStatus ?? 200;
+      res.writeHead(status, { "Content-Type": "application/json" });
+      res.end(JSON.stringify(response?.body ?? response ?? { ret: 0 }));
+      return;
+    }
+
+    if (req.method === "POST" && url.pathname === "/ilink/bot/getuploadurl") {
+      const response = getUploadUrlResponses.length > 1 ? getUploadUrlResponses.shift() : getUploadUrlResponses[0];
+      const status = response?.httpStatus ?? 200;
+      res.writeHead(status, { "Content-Type": "application/json" });
+      res.end(JSON.stringify(response?.body ?? response ?? { ret: 0, upload_param: "upload_param_fixture" }));
+      return;
+    }
+
+    if (req.method === "POST" && Object.hasOwn(uploadResponses, url.pathname)) {
+      const response = uploadResponses[url.pathname];
+      const status = response?.httpStatus ?? 200;
+      res.writeHead(status, {
+        "Content-Type": response?.contentType ?? "application/json",
+        ...(response?.headers ?? {})
+      });
+      res.end(Buffer.isBuffer(response?.body) ? response.body : JSON.stringify(response?.body ?? response ?? { ret: 0 }));
+      return;
+    }
+
+    if (req.method === "POST" && url.pathname === "/ilink/bot/getconfig") {
+      const response = getConfigResponses.length > 1 ? getConfigResponses.shift() : getConfigResponses[0];
+      const status = response?.httpStatus ?? 200;
+      res.writeHead(status, { "Content-Type": "application/json" });
+      res.end(JSON.stringify(response?.body ?? response ?? { ret: 0, typing_ticket: "typing_ticket_fixture" }));
+      return;
+    }
+
+    if (req.method === "POST" && url.pathname === "/ilink/bot/sendtyping") {
+      const response = sendTypingResponses.length > 1 ? sendTypingResponses.shift() : sendTypingResponses[0];
       const status = response?.httpStatus ?? 200;
       res.writeHead(status, { "Content-Type": "application/json" });
       res.end(JSON.stringify(response?.body ?? response ?? { ret: 0 }));

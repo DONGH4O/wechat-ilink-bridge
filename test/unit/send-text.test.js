@@ -31,11 +31,34 @@ async function seedAccount(stateDir) {
 
 function fakeSendClient(options = {}) {
   const calls = [];
+  const typingCalls = [];
+  const configCalls = [];
   return {
     calls,
+    typingCalls,
+    configCalls,
     async sendTextMessage(request) {
       calls.push(request);
       const failure = options.failAt === calls.length ? options.error : undefined;
+      if (failure) {
+        throw failure;
+      }
+      return { ret: 0 };
+    },
+    async getConfig(request) {
+      configCalls.push(request);
+      if (options.configError) {
+        throw options.configError;
+      }
+      return options.configResponse ?? {
+        ret: 0,
+        typing_ticket: "typing_ticket_text",
+        context_token: "ctx_secret_refreshed"
+      };
+    },
+    async sendTyping(request) {
+      typingCalls.push(request);
+      const failure = options.typingFailAt === typingCalls.length ? options.typingError : undefined;
       if (failure) {
         throw failure;
       }
@@ -102,6 +125,109 @@ test("sendText sends long text as multiple chunks with unique client IDs", async
     assert.notEqual(result.sent[0].clientId, result.sent[1].clientId);
     assert.equal(client.calls.map((call) => call.text).join(""), text);
     assert.equal((await readMessageHistory(stateDir, "bot_001")).length, 2);
+  });
+});
+
+test("sendText can send typing status and use refreshed context token", async () => {
+  await withTempDir(async (stateDir) => {
+    await seedAccount(stateDir);
+    await rememberContextToken(stateDir, "bot_001", "user_001", "ctx_secret");
+    const client = fakeSendClient();
+
+    const result = await sendText({
+      stateDir,
+      userId: "user_001",
+      text: "hello with typing",
+      client,
+      typing: true
+    });
+
+    assert.equal(client.configCalls[0].contextToken, "ctx_secret");
+    assert.deepEqual(client.typingCalls.map((call) => call.status), [1, 2]);
+    assert.equal(client.calls[0].contextToken, "ctx_secret_refreshed");
+    assert.equal(result.typing.started, true);
+    assert.equal(result.typing.stopped, true);
+  });
+});
+
+test("sendText continues delivery when typing setup fails", async () => {
+  await withTempDir(async (stateDir) => {
+    await seedAccount(stateDir);
+    await rememberContextToken(stateDir, "bot_001", "user_001", "ctx_secret");
+    const client = fakeSendClient({
+      configError: new WxbError("SERVER_ERROR", "typing unavailable", { retryable: true })
+    });
+
+    const result = await sendText({
+      stateDir,
+      userId: "user_001",
+      text: "hello despite typing",
+      client,
+      typing: true
+    });
+
+    assert.equal(client.configCalls.length, 1);
+    assert.equal(client.typingCalls.length, 0);
+    assert.equal(client.calls.length, 1);
+    assert.equal(client.calls[0].contextToken, "ctx_secret");
+    assert.equal(result.typing.requested, true);
+    assert.equal(result.typing.started, false);
+    assert.equal(result.typing.stopped, false);
+    assert.equal(result.typing.startError.code, "SERVER_ERROR");
+    assert.equal(JSON.stringify(result).includes("ctx_secret"), false);
+    assert.equal(JSON.stringify(result).includes("bot_secret"), false);
+  });
+});
+
+test("sendText continues delivery when typing start fails", async () => {
+  await withTempDir(async (stateDir) => {
+    await seedAccount(stateDir);
+    await rememberContextToken(stateDir, "bot_001", "user_001", "ctx_secret");
+    const client = fakeSendClient({
+      typingFailAt: 1,
+      typingError: new WxbError("NETWORK_ERROR", "start failed", { retryable: true })
+    });
+
+    const result = await sendText({
+      stateDir,
+      userId: "user_001",
+      text: "hello after start failure",
+      client,
+      typing: true
+    });
+
+    assert.equal(client.configCalls.length, 1);
+    assert.deepEqual(client.typingCalls.map((call) => call.status), [1]);
+    assert.equal(client.calls.length, 1);
+    assert.equal(client.calls[0].contextToken, "ctx_secret_refreshed");
+    assert.equal(result.typing.started, false);
+    assert.equal(result.typing.stopped, false);
+    assert.equal(result.typing.startError.code, "NETWORK_ERROR");
+  });
+});
+
+test("sendText keeps delivery successful when typing stop fails", async () => {
+  await withTempDir(async (stateDir) => {
+    await seedAccount(stateDir);
+    await rememberContextToken(stateDir, "bot_001", "user_001", "ctx_secret");
+    const client = fakeSendClient({
+      typingFailAt: 2,
+      typingError: new WxbError("NETWORK_ERROR", "stop failed", { retryable: true })
+    });
+
+    const result = await sendText({
+      stateDir,
+      userId: "user_001",
+      text: "hello with stop failure",
+      client,
+      typing: true
+    });
+
+    assert.deepEqual(client.typingCalls.map((call) => call.status), [1, 2]);
+    assert.equal(client.calls.length, 1);
+    assert.equal(result.typing.started, true);
+    assert.equal(result.typing.stopped, false);
+    assert.equal(result.typing.stopError.code, "NETWORK_ERROR");
   });
 });
 

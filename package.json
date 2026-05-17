@@ -1,7 +1,7 @@
 {
   "name": "@dongh4o/wechat-ilink-bridge",
-  "version": "0.1.0-beta.0",
-  "private": true,
+  "version": "0.1.0-beta.1",
+  "private": false,
   "type": "module",
   "description": "Local WeChat iLink Bridge CLI for Agent-safe fetch, send, state, and media handoff workflows.",
   "keywords": [
@@ -12,7 +12,7 @@
     "agent"
   ],
   "bin": {
-    "wxb": "./src/cli/index.js"
+    "wxb": "src/cli/index.js"
   },
   "files": [
     "src/",

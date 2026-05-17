@@ -6,7 +6,15 @@ This project follows semantic versioning after the first public package. Pre-`0.
 
 ## Unreleased
 
+- Added M13 CI matrix and stable-release readiness documentation.
+- Added troubleshooting guidance for install, login, sending, media, state, and safe debugging.
+
+## 0.1.0-beta.1 - 2026-05-17
+
 - Added M10 GitHub source release readiness: source install docs, issue templates, PR template, security policy, and validation report.
+- Added M11 outbound file/image sending with AES upload, optional typing status, safe CLI output, and mock protocol coverage.
+- Made optional typing best-effort so typing setup or stop failures do not block text, file, or image delivery.
+- Prepared the M12 npm beta package by setting `private: false`, updating the package version, and documenting beta install validation.
 
 ## 0.1.0-beta.0 - 2026-05-17
 

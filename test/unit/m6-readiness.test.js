@@ -2,14 +2,14 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 
-test("package metadata marks the M9 local release framework", async () => {
+test("package metadata marks the M12 npm beta candidate", async () => {
   const manifest = JSON.parse(await readFile("package.json", "utf8"));
 
   assert.equal(manifest.name, "@dongh4o/wechat-ilink-bridge");
-  assert.equal(manifest.version, "0.1.0-beta.0");
-  assert.equal(manifest.private, true);
+  assert.equal(manifest.version, "0.1.0-beta.1");
+  assert.equal(manifest.private, false);
   assert.equal(manifest.license, "MIT");
-  assert.equal(manifest.bin.wxb, "./src/cli/index.js");
+  assert.equal(manifest.bin.wxb, "src/cli/index.js");
   assert.equal("wxb-spike" in manifest.bin, false);
   assert.equal(manifest.scripts["pack:dry-run"], "npm pack --dry-run");
   assert.equal(manifest.scripts.spike, "node scripts/protocol-spike.js");
@@ -47,8 +47,10 @@ test("README documents Windows usage and M9 release expectations", async () => {
   assert.match(readme, /恢复提示/);
   assert.match(readme, /NO_CONTEXT_TOKEN/);
   assert.match(readme, /SESSION_EXPIRED/);
-  assert.match(readme, /0\.1\.0-beta\.0/);
-  assert.match(readme, /package\.json\.private/);
+  assert.match(readme, /0\.1\.0-beta\.1/);
+  assert.match(readme, /已可通过 `@dongh4o\/wechat-ilink-bridge@beta` 安装/);
+  assert.match(readme, /npm\.cmd install -g @dongh4o\/wechat-ilink-bridge@beta/);
+  assert.match(readme, /dongh4o-wechat-ilink-bridge-0\.1\.0-beta\.1\.tgz/);
   assert.match(readme, /@dongh4o\/wechat-ilink-bridge/);
   assert.match(readme, /DONGH4O\/wechat-ilink-bridge/);
   assert.match(readme, /LICENSE/);
@@ -66,7 +68,7 @@ test("release framework documents package boundaries and secret audit", async ()
     readFile("CHANGELOG.md", "utf8")
   ]);
 
-  assert.match(releaseProcess, /0\.1\.0-beta\.0/);
+  assert.match(releaseProcess, /0\.1\.0-beta\.1/);
   assert.match(releaseProcess, /@dongh4o\/wechat-ilink-bridge/);
   assert.match(releaseProcess, /DONGH4O\/wechat-ilink-bridge/);
   assert.match(releaseProcess, /package\.json\.private/);
@@ -80,6 +82,8 @@ test("release framework documents package boundaries and secret audit", async ()
   assert.match(releaseProcess, /LICENSE/);
   assert.match(releaseProcess, /m8-image-fetch\.stdout\.json/);
   assert.match(releaseProcess, /git status --short --ignored/);
+  assert.match(releaseProcess, /npm publish --tag beta --access public/);
+  assert.match(releaseProcess, /--prefix \$prefix/);
   assert.match(releaseProcess, /\.workbuddy\//);
   assert.match(npmignore, /^\.env$/m);
   assert.match(npmignore, /^m\*-\*\.stdout\.json$/m);
@@ -91,5 +95,6 @@ test("release framework documents package boundaries and secret audit", async ()
   assert.match(gitignore, /^\*\.tgz$/m);
   assert.match(gitignore, /^\*\.log$/m);
   assert.match(license, /^MIT License/);
+  assert.match(changelog, /## 0\.1\.0-beta\.1 - 2026-05-17/);
   assert.match(changelog, /## 0\.1\.0-beta\.0 - 2026-05-17/);
 });

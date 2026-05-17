@@ -28,10 +28,11 @@ test("parses .env content with comments and quoted values", () => {
 });
 
 test("parses kebab-case CLI flags to camelCase config keys", () => {
-  assert.deepEqual(parseCliArgs(["--base-url", "https://cli.example", "--fetch-timeout-ms=123", "--cdn-base-url=https://cdn.example/path?x=1&y=2"]), {
+  assert.deepEqual(parseCliArgs(["--base-url", "https://cli.example", "--fetch-timeout-ms=123", "--max-upload-bytes=456", "--cdn-base-url=https://cdn.example/path?x=1&y=2"]), {
     baseUrl: "https://cli.example",
     cdnBaseUrl: "https://cdn.example/path?x=1&y=2",
-    fetchTimeoutMs: "123"
+    fetchTimeoutMs: "123",
+    maxUploadBytes: "456"
   });
 });
 
@@ -47,6 +48,7 @@ test("loads defaults and resolves a Windows default state directory", async () =
 
     assert.equal(config.baseUrl, "https://ilinkai.weixin.qq.com");
     assert.equal(config.channelVersion, "0.1.0");
+    assert.equal(config.maxUploadBytes, 25 * 1024 * 1024);
     assert.equal(config.stateDir, path.join(cwd, "Local App Data", "wxb"));
   });
 });

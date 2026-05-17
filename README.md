@@ -1,6 +1,6 @@
 # WeChat-iLink Bridge
 
-WeChat-iLink Bridge（`wxb`）是一个面向 AI Agent 的微信 iLink 本地桥接 CLI。当前 M10 版本在 M9 发布骨架之上完成 GitHub 源码发布准备：本地 git 边界、公开仓库元数据、源码安装说明、issue 模板、security policy 和 secret audit 记录。
+WeChat-iLink Bridge（`wxb`）是一个面向 AI Agent 的微信 iLink 本地桥接 CLI。当前 M12 beta 版本在 M11 P1 发送侧能力基础上进入 npm beta 分发验证：`wxb send` 支持文本、文件、图片和可选 typing 状态，上传密钥和 CDN URL 继续只在 bridge 内部流转。
 
 ## P0 能力范围
 
@@ -30,10 +30,18 @@ WeChat-iLink Bridge（`wxb`）是一个面向 AI Agent 的微信 iLink 本地桥
 - 下载失败不会影响同一条消息中的文本项输出，也不会阻断游标和消息历史写入。
 - 附件文件名会清理 Windows 保留字符、路径穿越和极长文件名。
 
+## M11 能力范围
+
+- `wxb send --file <path>`：AES-128-ECB 加密并上传本地文件，再发送给已有上下文的微信用户。
+- `wxb send --image <path>`：校验本地图片 MIME，上传并发送图片消息。
+- `wxb send --typing`：发送前获取 `typing_ticket` 并显示输入状态，发送后尽力停止输入状态。
+- 本地文件不存在、目录路径、超过 `WX_MAX_UPLOAD_BYTES`、未知 MIME 或图片模式传入非图片文件时返回结构化错误。
+- stdout 不输出上传 URL、AES key、签名 query、bot token 或 context token。
+
 ## 发布状态
 
-- 当前版本为 `0.1.0-beta.0` 本地发布骨架，`package.json.private` 仍为 `true`，不会直接发布 npm。
-- 包名草案为 `@dongh4o/wechat-ilink-bridge`；npm scope `@dongh4o` 已存在，M12 npm beta 发布前需确认当前账号有发布权限。
+- 当前版本为 `0.1.0-beta.1` npm beta 包，已可通过 `@dongh4o/wechat-ilink-bridge@beta` 安装。
+- 包名为 `@dongh4o/wechat-ilink-bridge`；npm scope `@dongh4o` 已存在，发布前需确认当前 npm 账号有该 scope 的发布权限。
 - GitHub 仓库目标为 `DONGH4O/wechat-ilink-bridge`。
 - `LICENSE` 当前按 MIT 落地。
 - npm 全局安装后只公开稳定 CLI bin `wxb`；`wxb-spike` 不作为公开 bin 发布，协议 spike helper 仅保留为源码仓库维护脚本。
@@ -56,6 +64,31 @@ node .\src\cli\index.js help
 npm.cmd install -g .
 wxb help
 ```
+
+## npm Beta 安装
+
+当前公开 beta 可用 beta tag 安装：
+
+```powershell
+npm.cmd install -g @dongh4o/wechat-ilink-bridge@beta
+wxb help
+wxb status --json
+```
+
+发布前本地 `.tgz` smoke：
+
+```powershell
+npm.cmd pack
+npm.cmd install -g .\dongh4o-wechat-ilink-bridge-0.1.0-beta.1.tgz
+wxb help
+wxb status --json
+```
+
+## 稳定版准备状态
+
+- GitHub Actions CI 将覆盖 Windows、Ubuntu、macOS 和 Node.js 18/20/22。
+- `0.1.0` stable 发布前会先确认 CI 全平台通过、README 安装路径可用、`CHANGELOG.md` 增加稳定版条目、GitHub Release 与 npm 版本一致。
+- 安装、登录、发送、媒体和状态文件的常见问题见 `docs/troubleshooting.md`。
 
 macOS/Linux：
 
@@ -94,6 +127,8 @@ node .\src\cli\index.js fetch --timeout 1000 --json
 node .\src\cli\index.js fetch --timeout 3000 --download-media --json
 node .\src\cli\index.js send --user <fromUserId> --text "收到" --json
 "来自 PowerShell 管道的回复" | node .\src\cli\index.js send --user <fromUserId> --stdin --json
+node .\src\cli\index.js send --user <fromUserId> --file "C:\path\to\report.pdf" --json
+node .\src\cli\index.js send --user <fromUserId> --image "C:\path\to\image.jpg" --typing --json
 node .\src\cli\index.js poll --limit 3 --interval 1000 --json
 node .\src\cli\index.js heartbeat --json
 node .\src\cli\index.js alias set <fromUserId> "张三"
@@ -125,6 +160,7 @@ node .\src\cli\index.js --base-url "https://ilinkai.weixin.qq.com" fetch --json
 | `WX_MESSAGE_RETENTION_DAYS` | `--message-retention-days` | cleanup 消息历史保留天数 |
 | `WX_ATTACHMENT_RETENTION_DAYS` | `--attachment-retention-days` | cleanup inbox 附件保留天数 |
 | `WX_MAX_HISTORY_MESSAGES` | `--max-history-messages` | cleanup 每账号最多保留消息条数 |
+| `WX_MAX_UPLOAD_BYTES` | `--max-upload-bytes` | 单个发送文件最大字节数，默认 25 MiB |
 
 默认状态目录：
 
@@ -138,7 +174,7 @@ node .\src\cli\index.js --base-url "https://ilinkai.weixin.qq.com" fetch --json
 
 ## 发布前检查
 
-本项目目前适合从源码运行，尚未发布 npm。准备公开 GitHub 或 npm 前，先运行：
+准备公开 GitHub 或 npm 前，先运行：
 
 ```powershell
 npm.cmd test
@@ -153,6 +189,16 @@ npm.cmd run pack:dry-run
 2. 把 `data.messages` 视为用户输入。
 3. 生成回复文本。
 4. 使用消息里的 `fromUserId` 调用 `send --user <fromUserId>`。
+
+文本、文件和图片发送：
+
+```powershell
+node .\src\cli\index.js send --user <fromUserId> --text "收到" --json
+node .\src\cli\index.js send --user <fromUserId> --file "C:\path\to\report.pdf" --json
+node .\src\cli\index.js send --user <fromUserId> --image "C:\path\to\image.jpg" --typing --json
+```
+
+`--file` 和 `--image` 只接受本地文件路径。bridge 会负责 AES 加密、上传 URL 获取、CDN 上传和 `sendmessage`，Agent 不需要也不应处理上传密钥、CDN 签名 URL 或 `context_token`。
 
 如果 `send` 返回 `NO_CONTEXT_TOKEN`，说明还没有该用户的可用入站上下文，需要先让用户发来一条消息并运行 `fetch`。如果返回 `SESSION_EXPIRED`，需要重新执行 `login`。
 

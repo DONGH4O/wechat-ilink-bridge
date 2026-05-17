@@ -7,6 +7,7 @@ import { resolveContextToken } from "../state/context-token-store.js";
 import { appendMessageHistory } from "../state/message-history.js";
 import { withAccountLock } from "../state/lock.js";
 import { queueTextDelivery } from "./delivery-queue.js";
+import { withOptionalTyping } from "./typing.js";
 
 export async function resolveSendAccount(stateDir, accountId) {
   const accounts = await listAccounts(stateDir, { includeSecrets: true });
@@ -83,7 +84,8 @@ export async function sendText(options = {}) {
     timeoutMs = config.fetchTimeoutMs,
     chunkOptions = {},
     queueOnInvalidContext = true,
-    queueOnNoContext = false
+    queueOnNoContext = false,
+    typing = false
   } = options;
 
   if (!stateDir) {
@@ -138,103 +140,114 @@ export async function sendText(options = {}) {
       });
     }
 
-    const sent = [];
-    const startedAt = Math.floor(Date.now() / 1000);
-
-    for (let index = 0; index < chunks.length; index += 1) {
-      const chunk = chunks[index];
-      const clientId = generateClientId();
-
-      try {
-        await client.sendTextMessage({
-          token: account.token,
-          toUserId: targetUserId,
-          text: chunk,
-          contextToken,
-          clientId,
-          timeoutMs
-        });
-      } catch (error) {
-        if (!(error instanceof WxbError)) {
-          throw error;
-        }
-
-        if (queueOnInvalidContext && error.code === "INVALID_CONTEXT_TOKEN" && sent.length === 0) {
-          const queued = await queueTextDelivery({
-            stateDir,
-            accountId: account.accountId,
-            userId: targetUserId,
-            text,
-            source: "invalid_context",
-            error,
-            maxItems: config.delayedQueueMaxItems,
-            lock: false
-          });
-
-          return {
-            accountId: account.accountId,
-            toUserId: targetUserId,
-            delivered: false,
-            queued: true,
-            queue: queued
-          };
-        }
-
-        throw new WxbError(error.code, error.message, {
-          retryable: error.retryable,
-          status: error.status,
-          details: {
-            ...(error.details ?? {}),
-            sentCount: sent.length,
-            failedChunkIndex: sent.length + 1,
-            totalChunks: chunks.length
-          }
-        });
-      }
-
-      const entry = {
-        id: clientId,
-        direction: "outgoing",
-        fromUserId: account.ownerUserId,
-        toUserId: targetUserId,
-        timestamp: startedAt,
-        type: "text",
-        text: chunk,
-        contextToken,
-        chunkIndex: index + 1,
-        chunkCount: chunks.length
-      };
-      const sentItem = {
-        clientId: entry.id,
-        chunkIndex: entry.chunkIndex,
-        chars: chunk.length
-      };
-
-      try {
-        await appendMessageHistory(stateDir, account.accountId, entry);
-      } catch (error) {
-        throw new WxbError("OUTGOING_HISTORY_WRITE_FAILED", "Message was sent but local outgoing history could not be written.", {
-          retryable: false,
-          details: {
-            delivered: true,
-            sentCount: sent.length + 1,
-            failedChunkIndex: entry.chunkIndex,
-            totalChunks: chunks.length,
-            clientId: entry.id,
-            deliveredClientIds: [...sent.map((item) => item.clientId), entry.id],
-            cause: error?.message ?? String(error)
-          }
-        });
-      }
-
-      sent.push(sentItem);
-    }
-
-    return {
+    return withOptionalTyping({
+      enabled: typing,
+      client,
+      token: account.token,
+      stateDir,
       accountId: account.accountId,
-      toUserId: targetUserId,
-      chunkCount: chunks.length,
-      sent
-    };
+      userId: targetUserId,
+      contextToken,
+      timeoutMs
+    }, async (activeContextToken) => {
+      const sent = [];
+      const startedAt = Math.floor(Date.now() / 1000);
+
+      for (let index = 0; index < chunks.length; index += 1) {
+        const chunk = chunks[index];
+        const clientId = generateClientId();
+
+        try {
+          await client.sendTextMessage({
+            token: account.token,
+            toUserId: targetUserId,
+            text: chunk,
+            contextToken: activeContextToken,
+            clientId,
+            timeoutMs
+          });
+        } catch (error) {
+          if (!(error instanceof WxbError)) {
+            throw error;
+          }
+
+          if (queueOnInvalidContext && error.code === "INVALID_CONTEXT_TOKEN" && sent.length === 0) {
+            const queued = await queueTextDelivery({
+              stateDir,
+              accountId: account.accountId,
+              userId: targetUserId,
+              text,
+              source: "invalid_context",
+              error,
+              maxItems: config.delayedQueueMaxItems,
+              lock: false
+            });
+
+            return {
+              accountId: account.accountId,
+              toUserId: targetUserId,
+              delivered: false,
+              queued: true,
+              queue: queued
+            };
+          }
+
+          throw new WxbError(error.code, error.message, {
+            retryable: error.retryable,
+            status: error.status,
+            details: {
+              ...(error.details ?? {}),
+              sentCount: sent.length,
+              failedChunkIndex: sent.length + 1,
+              totalChunks: chunks.length
+            }
+          });
+        }
+
+        const entry = {
+          id: clientId,
+          direction: "outgoing",
+          fromUserId: account.ownerUserId,
+          toUserId: targetUserId,
+          timestamp: startedAt,
+          type: "text",
+          text: chunk,
+          contextToken: activeContextToken,
+          chunkIndex: index + 1,
+          chunkCount: chunks.length
+        };
+        const sentItem = {
+          clientId: entry.id,
+          chunkIndex: entry.chunkIndex,
+          chars: chunk.length
+        };
+
+        try {
+          await appendMessageHistory(stateDir, account.accountId, entry);
+        } catch (error) {
+          throw new WxbError("OUTGOING_HISTORY_WRITE_FAILED", "Message was sent but local outgoing history could not be written.", {
+            retryable: false,
+            details: {
+              delivered: true,
+              sentCount: sent.length + 1,
+              failedChunkIndex: entry.chunkIndex,
+              totalChunks: chunks.length,
+              clientId: entry.id,
+              deliveredClientIds: [...sent.map((item) => item.clientId), entry.id],
+              cause: error?.message ?? String(error)
+            }
+          });
+        }
+
+        sent.push(sentItem);
+      }
+
+      return {
+        accountId: account.accountId,
+        toUserId: targetUserId,
+        chunkCount: chunks.length,
+        sent
+      };
+    });
   });
 }

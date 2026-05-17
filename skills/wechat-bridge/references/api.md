@@ -202,6 +202,8 @@ Important:
 wxb send --user <fromUserId> --text "reply text" --json
 "reply text" | wxb send --user <fromUserId> --stdin --json
 wxb send --account <accountId> --user <fromUserId> --text "reply text" --json
+wxb send --user <fromUserId> --file "C:\path\to\report.pdf" --json
+wxb send --user <fromUserId> --image "C:\path\to\image.jpg" --typing --json
 ```
 
 Alias send:
@@ -217,8 +219,11 @@ Behavior:
 - `--user` must be an opaque `fromUserId` previously returned by `wxb fetch`; nicknames, phone numbers, and remarks are not supported.
 - Splits long text according to configured limits.
 - Sends each chunk with a distinct `client_id`.
+- For `--file` and `--image`, reads a local file path, infers MIME, encrypts bytes with AES-128-ECB, requests an upload URL, uploads encrypted bytes, then sends the media item.
+- For `--typing`, fetches a typing ticket, sends typing start before delivery, and sends typing stop after the delivery attempt.
 - Writes successful chunks to outbound message history.
 - Returns a send summary without credential or context token values.
+- Does not return upload URLs, AES keys, signed query parameters, typing tickets, bot tokens, or context tokens.
 - If iLink rejects an expired context token before any chunk is delivered, the bridge queues the original text for delayed resend.
 
 Success shape:
@@ -237,6 +242,31 @@ Success shape:
         "chars": 12
       }
     ]
+  }
+}
+```
+
+Media success shape:
+
+```json
+{
+  "ok": true,
+  "data": {
+    "accountId": "bot id",
+    "toUserId": "sender id",
+    "kind": "image",
+    "clientId": "wxb timestamp random",
+    "fileName": "image.jpg",
+    "mimeType": "image/jpeg",
+    "bytes": 12345,
+    "encryptedBytes": 12352,
+    "uploaded": true,
+    "sent": true,
+    "typing": {
+      "requested": true,
+      "started": true,
+      "stopped": true
+    }
   }
 }
 ```
@@ -330,6 +360,13 @@ Common errors:
 | `SESSION_EXPIRED` | iLink session expired. | Ask the user to scan-login again. |
 | `INVALID_CONTEXT_TOKEN` | Cached route token was rejected. | Run fetch after the user sends a fresh message; retry only after state refresh. |
 | `TEXT_TOO_LONG` | Reply exceeds chunk/message limits. | Summarize or split into fewer messages. |
+| `SEND_SOURCE_AMBIGUOUS` | More than one of `--text`, `--stdin`, `--file`, or `--image` was provided. | Retry with exactly one source. |
+| `MEDIA_FILE_NOT_FOUND` | Local file path does not exist. | Ask for a valid local file path. |
+| `MEDIA_PATH_NOT_FILE` | Path points to a directory or non-file. | Ask for a regular file path. |
+| `MEDIA_FILE_TOO_LARGE` | File exceeds `WX_MAX_UPLOAD_BYTES`. | Send a smaller file or raise the configured limit intentionally. |
+| `MEDIA_TYPE_UNSUPPORTED` | MIME cannot be inferred or image mode got a non-image. | Use a supported extension or send a different file. |
+| `MEDIA_UPLOAD_FAILED` | CDN upload failed. | Retry later if the user still wants to send the file. |
+| `MEDIA_UPLOAD_PARAM_MISSING` | CDN upload did not return the encrypted media parameter required by `sendmessage`. | Treat as protocol drift; preserve the error code and retry after bridge update. |
 | `OUTGOING_HISTORY_WRITE_FAILED` | WeChat delivery succeeded but local outgoing history write failed. | Do not blindly retry. Tell the user the message may already be delivered and preserve the returned `clientId` or `deliveredClientIds`. |
 | `STATE_LOCK_TIMEOUT` | Another command holds the account lock. | Wait briefly and retry. |
 

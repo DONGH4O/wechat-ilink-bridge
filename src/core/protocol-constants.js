@@ -12,7 +12,8 @@ export const protocolDefaults = Object.freeze({
   delayedQueueMaxItems: 100,
   messageRetentionDays: 30,
   attachmentRetentionDays: 30,
-  maxHistoryMessages: 10000
+  maxHistoryMessages: 10000,
+  maxUploadBytes: 25 * 1024 * 1024
 });
 
 export const endpoints = Object.freeze({
@@ -36,6 +37,21 @@ export const itemTypes = Object.freeze({
   file: 4,
   voiceCandidate: 34,
   videoCandidate: 43
+});
+
+export const outgoingItemTypes = Object.freeze({
+  text: 1,
+  image: 2,
+  voice: 3,
+  file: 4,
+  video: 5
+});
+
+export const uploadMediaTypes = Object.freeze({
+  image: 1,
+  video: 2,
+  file: 3,
+  voice: 4
 });
 
 export const itemTypeByCode = Object.freeze({

@@ -15,7 +15,7 @@
 4. 验证 token、context token 不暴露给 Agent。
 5. 验证状态文件跨平台路径设计，P0 优先 Windows。
 6. 验证状态文件原子写和并发保护。
-7. 为 P1 poller、cleanup、媒体下载保留测试扩展点。
+7. 验证 P1 poller、cleanup、媒体下载、媒体发送和 typing 的回归边界。
 
 ## 2. 测试分层
 
@@ -27,7 +27,7 @@
 | 真实接口手工测试 | 扫码、真实微信消息、真实发送 | 是 |
 | 并发与故障测试 | 文件锁、原子写、中断恢复 | 是 |
 | 跨平台测试 | Windows/macOS/Linux | Windows P0，其他 P1 |
-| 媒体测试 | 图片/语音/文件/视频 | P0 元数据，P1 下载 |
+| 媒体测试 | 图片/语音/文件/视频 | P0 元数据，P1 下载与发送 |
 | 安全测试 | 脱敏、路径、权限 | 是 |
 
 ## 3. 测试环境
@@ -539,6 +539,30 @@ M8 完成记录：
 - 自动化回归：`npm.cmd test`，103 项测试通过。
 - 真实接口冒烟：图片、文件、语音、视频均 `succeeded = 1`、`failed = 0`，附件路径均存在。
 
+### 10.5 P1 媒体发送与 typing
+
+用例：
+
+- `send --file <path>` 发送本地文件。
+- `send --image <path>` 发送本地图片。
+- `send --image <path> --typing` 发送前展示输入状态，发送后停止输入状态。
+- 本地文件不存在、目录路径、超大文件、未知 MIME、图片模式传入非图片。
+- CDN 上传成功后 `sendmessage` 失败。
+
+验收：
+
+- 媒体发送会先获取上传 URL、上传加密字节，再发送媒体 `item`。
+- 文件/图片成功输出只包含安全元数据和 `clientId`。
+- stdout 不出现上传 URL、AES key、签名 query、typing ticket、bot token 或 context token。
+- 本地校验错误返回结构化 JSON，且不会访问 iLink client。
+- 上传成功但发送失败时不会误报成功，并暴露安全的 uploaded/clientId/fileName 元数据。
+
+M11 完成记录：
+
+- 自动化回归：`npm.cmd test`，124 项测试通过。
+- npm 包边界：`npm.cmd run pack:dry-run` 通过，共 53 个文件。
+- 真实接口冒烟：登录、fetch、文本发送、typing、文件发送、图片发送和负向校验通过；媒体发送首轮 `ret: -2` 已通过 `upload_param`、CDN `x-encrypted-param` 和出站媒体 item 类型校准解决。
+
 ## 11. 数据保留与清理测试
 
 P1 测试。
@@ -619,5 +643,7 @@ P1 开发后必须回归：
 4. alias 不影响 userId 直发。
 5. 媒体下载失败不影响文本消息处理。
 6. `fetch --download-media` 可保存图片、文件、语音、视频到 inbox。
-7. 媒体 stdout 不泄露 AES key、CDN 下载 URL 或签名查询参数。
-8. Windows/macOS/Linux 基础命令均可运行。
+7. `send --file/--image` 可上传并发送本地媒体。
+8. `send --typing` 不影响发送结果，停止 typing 失败只作为安全元数据返回。
+9. 媒体 stdout 不泄露 AES key、CDN URL、上传 URL、typing ticket 或签名查询参数。
+10. Windows/macOS/Linux 基础命令均可运行。

@@ -21,13 +21,13 @@ function printJson(payload) {
 function help() {
   return cliSuccess({
     name: "wxb",
-    milestone: "M8",
+    milestone: "M12",
     commands: {
       login: "Scan-login and save an iLink account",
       accounts: "List saved accounts without tokens",
       status: "Show local account, cursor, conversation, and history status",
       fetch: "Long-poll one batch of inbound messages, optionally downloading media, and save local state",
-      send: "Send text to a user using cached context token",
+      send: "Send text, files, or images to a user using cached context token",
       poll: "Run repeated foreground fetch loops for keepalive and local processing",
       heartbeat: "Run one scheduled keepalive fetch without a daemon",
       alias: "Manage readable aliases for opaque user IDs",

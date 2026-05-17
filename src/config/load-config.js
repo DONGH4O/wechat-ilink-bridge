@@ -20,6 +20,7 @@ const envKeyByConfigKey = Object.freeze({
   messageRetentionDays: "WX_MESSAGE_RETENTION_DAYS",
   attachmentRetentionDays: "WX_ATTACHMENT_RETENTION_DAYS",
   maxHistoryMessages: "WX_MAX_HISTORY_MESSAGES",
+  maxUploadBytes: "WX_MAX_UPLOAD_BYTES",
   botUserName: "BOT_USER_NAME"
 });
 
@@ -34,7 +35,8 @@ const numberKeys = new Set([
   "delayedQueueMaxItems",
   "messageRetentionDays",
   "attachmentRetentionDays",
-  "maxHistoryMessages"
+  "maxHistoryMessages",
+  "maxUploadBytes"
 ]);
 
 function kebabToCamel(value) {

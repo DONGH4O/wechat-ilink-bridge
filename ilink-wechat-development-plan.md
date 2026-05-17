@@ -388,7 +388,35 @@ iLinkBot/
 - 已完成真实接口冒烟：图片、文件、语音、视频均保存成功，附件路径存在。
 - 最终自动化回归：`npm.cmd test`，103 项测试通过。
 
-## 13. 风险与缓解
+## 13. M11 P1 发送侧补齐
+
+目标：将 P1 从“媒体可接收”补齐到“媒体可发送”，并加入可选 typing 状态。
+
+状态：已完成。自动化 mock 验收和 npm 包 dry-run 均已通过，详见 `docs/m11-validation-report.md`。
+
+任务：
+
+1. 实现本地文件/图片 MIME 推断、大小校验、AES-128-ECB 加密与上传。
+2. 封装 `/ilink/bot/getuploadurl`、CDN 上传、媒体 `sendmessage`。
+3. 支持 `wxb send --file <path>`、`wxb send --image <path>` 和可选 `--typing`。
+4. 封装 `/ilink/bot/getconfig`、`/ilink/bot/sendtyping`，并支持刷新后的 context token。
+5. 更新 Skill、API reference、README 与验收报告。
+
+验收：
+
+- mock server 覆盖上传 URL、二进制上传、typing、媒体 `sendmessage`。
+- 本地文件不存在、目录路径、超大文件、未知 MIME 和图片类型错误均返回结构化错误。
+- 上传 URL、AES key、typing ticket、bot token 和 context token 不进入 stdout。
+- 上传成功但发送失败时不会误报成功，并返回安全失败元数据。
+- `npm.cmd test` 通过，当前为 124 项测试通过。
+- `npm.cmd run pack:dry-run` 通过，M11 新增文件进入包内容清单。
+
+真实接口说明：
+
+- M11 真实接口冒烟已通过：登录、fetch、文本发送、typing、文件发送、图片发送和负向校验均完成。
+- 媒体发送首轮 `ret: -2` 已通过 `upload_param`、CDN `x-encrypted-param` 和出站媒体 item 类型校准解决。
+
+## 14. 风险与缓解
 
 | 风险 | 影响 | 缓解 |
 |---|---|---|
@@ -400,9 +428,15 @@ iLinkBot/
 | 媒体 CDN 复杂 | P1 延误 | P0 只做元数据，不阻塞文本闭环 |
 | 消息历史膨胀 | 本地磁盘增长 | P1 cleanup + retention config |
 
-## 14. 发布与分发建议
+## 15. 发布与分发建议
 
 后续 M9-M15 的详细里程碑、交付品、版本策略和验收标准见 `docs/next-milestones.md`。
+
+M12 当前结果：
+
+- `0.1.0-beta.1` npm beta 已发布。
+- 本地 `.tgz` 安装 smoke 和公开 registry 安装 smoke 均已通过。
+- `@dongh4o/wechat-ilink-bridge@beta` 可安装，详见 `docs/m12-validation-report.md`。
 
 P0 阶段：
 

@@ -1,11 +1,11 @@
 ---
 name: wechat-bridge
-description: Use this skill when an agent needs to receive WeChat messages or send WeChat text replies through the local WeChat-iLink Bridge CLI (`wxb`), including tasks phrased as "fetch WeChat messages", "reply on WeChat", "send a WeChat notification", "微信消息", "发微信", or "微信通知". The bridge handles iLink credentials and context tokens locally; the agent should use the CLI JSON interface and never handle token values directly.
+description: Use this skill when an agent needs to receive WeChat messages or send WeChat text, file, or image messages through the local WeChat-iLink Bridge CLI (`wxb`), including tasks phrased as "fetch WeChat messages", "reply on WeChat", "send a WeChat notification", "微信消息", "发微信", or "微信通知". The bridge handles iLink credentials, context tokens, media upload secrets, and CDN URLs locally; the agent should use the CLI JSON interface and never handle token values directly.
 ---
 
 # WeChat Bridge
 
-Use the local `wxb` CLI to receive WeChat input and send text replies through the iLink bridge. Keep all tool-facing output JSON-only, and treat `context_token` as an internal implementation detail managed by the bridge.
+Use the local `wxb` CLI to receive WeChat input and send text, file, or image messages through the iLink bridge. Keep all tool-facing output JSON-only, and treat `context_token`, upload URLs, and AES keys as internal implementation details managed by the bridge.
 
 For command schemas and error details, read [references/api.md](references/api.md).
 
@@ -31,6 +31,8 @@ wxb fetch --json --timeout 15000
 wxb fetch --json --timeout 15000 --download-media
 wxb send --account <accountId> --user <fromUserId> --text "收到，我会继续处理。" --json
 "长回复内容" | wxb send --account <accountId> --user <fromUserId> --stdin --json
+wxb send --account <accountId> --user <fromUserId> --file "C:\path\to\report.pdf" --json
+wxb send --account <accountId> --user <fromUserId> --image "C:\path\to\image.jpg" --typing --json
 wxb alias set <fromUserId> "张三"
 wxb send --account <accountId> --alias "张三" --text "收到。" --json
 wxb queue list --json
@@ -45,6 +47,8 @@ Use `--account <accountId>` when multiple accounts are configured or when an err
 - When `attachments[]` is present, use the returned `path` directly. Do not infer paths, and do not ask for media secrets such as AES keys, CDN URLs, or signed query parameters.
 - If `download.ok` is false on a media item, continue processing any text in the message and ask the user for a text description only if the missing media is essential.
 - Long replies are split by the bridge. Keep replies natural and avoid sending many chunks unless the task truly needs detail.
+- Files and images must be local filesystem paths. Pass only the path to `wxb send --file` or `wxb send --image`; the bridge handles AES encryption, upload URL retrieval, CDN upload, media item creation, and local history.
+- Use `--typing` only when sending immediately visible user-facing replies where a typing indicator is helpful.
 - The bridge writes inbound and outbound history locally; do not create a separate token or cursor store.
 
 ## Proactive Sending
@@ -63,8 +67,10 @@ Aliases are local convenience labels for opaque `fromUserId` values. Use `wxb al
 - `INVALID_CONTEXT_TOKEN`: The bridge queues the message if no chunks were delivered. Ask the user to send a fresh WeChat message, run `wxb fetch --json`, and let the bridge attempt one delayed resend.
 - `TEXT_TOO_LONG`: Summarize or split the content into fewer messages.
 - `OUTGOING_HISTORY_WRITE_FAILED`: The message was already delivered to WeChat, but local history could not be written. Do not blindly retry. Tell the user it may have been sent and include the returned `clientId` or `deliveredClientIds` if you summarize the failure.
+- `MEDIA_FILE_NOT_FOUND`, `MEDIA_PATH_NOT_FILE`, `MEDIA_FILE_TOO_LARGE`, `MEDIA_TYPE_UNSUPPORTED`: Ask the user for a valid local file path or a supported file type; do not retry unchanged.
+- `MEDIA_UPLOAD_FAILED`: The file was not delivered. Retry only if the user still wants to send the same local file.
 - `STATE_LOCK_TIMEOUT`: Another bridge command is using the same account. Wait briefly and retry.
 
 Delayed queue rule: each inbound message triggers at most one queued resend for that same user. Do not manually flush the whole queue unless the user explicitly asks.
 
-Do not print secrets, bearer values, `bot_token`, or `context_token` values in chat, logs, or summaries.
+Do not print secrets, bearer values, `bot_token`, `context_token`, typing tickets, upload URLs, signed query parameters, or AES keys in chat, logs, or summaries.
