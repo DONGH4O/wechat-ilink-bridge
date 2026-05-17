@@ -58,17 +58,12 @@ rg --files -g ".env" -g ".env.*" -g "*.stdout.json" -g "m*-*.stdout.json" -g "te
 - 初始 commit 已创建。
 - `origin` 已配置为 `https://github.com/DONGH4O/wechat-ilink-bridge.git`。
 
-待执行/待更新：
-
-- 创建 public repo `DONGH4O/wechat-ilink-bridge`。
-- push `main`。
-
-当前阻塞：
-
-- GitHub API 查询 `DONGH4O/wechat-ilink-bridge` 返回 404，目标仓库尚不存在或当前 GitHub app 不可见。
-- 本机未安装 `gh` CLI，当前可用 GitHub 连接器不提供创建新仓库动作。
-- 创建空的 public GitHub repository 后，可直接执行 `git push -u origin main`。
+- Public GitHub repo 已创建：`https://github.com/DONGH4O/wechat-ilink-bridge`。
+- `git push -u origin main` 已完成。
+- GitHub repo 可见性：public。
+- GitHub 默认分支：`main`。
+- 本地 `main` 已跟踪 `origin/main`。
 
 ## 交付结论
 
-本地 M10 文件、测试、pack 预演、secret audit、git 初始化、初始 commit 和 origin 配置已完成。待 GitHub 空仓库创建并 push 后更新最终远端状态。
+M10 已完成：本地 M10 文件、测试、pack 预演、secret audit、git 初始化、初始 commit、origin 配置、public GitHub 仓库创建和 `main` push 均已完成。公开仓库地址为 `https://github.com/DONGH4O/wechat-ilink-bridge`。
