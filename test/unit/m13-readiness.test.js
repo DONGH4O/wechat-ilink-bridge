@@ -45,7 +45,7 @@ test("M13 validation report records stable release gates", async () => {
   assert.match(report, /GitHub Actions CI matrix/);
   assert.match(report, /0\.1\.0-beta\.1/);
   assert.match(report, /0\.1\.0/);
-  assert.match(report, /Windows、Ubuntu、macOS/);
+  assert.match(report, /Windows 2025、Ubuntu、macOS/);
   assert.match(report, /Node\.js 18、20、22/);
   assert.match(report, /CHANGELOG\.md/);
   assert.match(report, /npm publish --access public/);

@@ -12,7 +12,8 @@ M13 将 beta 收敛为第一个 P1 稳定版候选。当前阶段先完成稳定
 ## 当前状态
 
 - M12 npm beta 已发布，`@dongh4o/wechat-ilink-bridge@beta` 指向 `0.1.0-beta.1`。
-- `0.1.0` stable version bump、git tag、GitHub Release 和 npm stable publish 待 CI 在 GitHub 上真实跑绿后执行。
+- GitHub Actions CI 已在 `ce25f0b` 上真实跑绿。
+- `0.1.0` stable version bump、git tag、GitHub Release 和 npm stable publish 待人工确认后执行。
 
 ## 本地验收结果
 
@@ -28,9 +29,12 @@ npm.cmd run pack:dry-run
 
 ## GitHub 验收
 
-推送到 GitHub 后确认：
+已推送到 GitHub 并确认：
 
-- `.github/workflows/ci.yml` 在 Windows、Ubuntu、macOS 上运行。
+- Run: https://github.com/DONGH4O/wechat-ilink-bridge/actions/runs/25992797362
+- Head SHA: `ce25f0b681bf7b40cfff161555d0a81b02c8a247`
+- Status: completed / success。
+- `.github/workflows/ci.yml` 在 Windows 2025、Ubuntu、macOS 上运行。
 - Node.js 18、20、22 matrix 均通过 `npm test`。
 - 每个 matrix job 均通过 `npm pack --dry-run`。
 
