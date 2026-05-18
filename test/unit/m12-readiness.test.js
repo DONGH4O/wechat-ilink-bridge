@@ -25,6 +25,6 @@ test("README documents beta tag and local tarball install paths", async () => {
 
   assert.match(readme, /npm Beta 安装/);
   assert.match(readme, /npm\.cmd install -g @dongh4o\/wechat-ilink-bridge@beta/);
-  assert.match(readme, /dongh4o-wechat-ilink-bridge-0\.1\.0-beta\.1\.tgz/);
+  assert.match(readme, /dongh4o-wechat-ilink-bridge-0\.2\.0\.tgz/);
   assert.match(readme, /已可通过 `@dongh4o\/wechat-ilink-bridge@beta` 安装/);
 });

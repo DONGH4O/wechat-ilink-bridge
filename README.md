@@ -4,9 +4,9 @@
 
 License: [MIT](LICENSE)
 
-Public npm bin 只公开稳定 CLI bin `wxb`；`wxb-spike` 不作为公开 bin 发布。
+Public npm bin 公开稳定 CLI bin `wxb` 和 P2 MCP adapter bin `wxb-mcp`；`wxb-spike` 不作为公开 bin 发布。
 
-WeChat-iLink Bridge（`wxb`）是一个面向 AI Agent 的微信 iLink 本地桥接 CLI。当前公开版本为 M12 npm beta，M13 稳定版候选准备已完成：`wxb send` 支持文本、文件、图片和可选 typing 状态，跨平台 GitHub Actions CI 已通过，上传密钥和 CDN URL 继续只在 bridge 内部流转。
+WeChat-iLink Bridge（`wxb`）是一个面向 AI Agent 的微信 iLink 本地桥接 CLI。当前源码版本为 `0.2.0`：`wxb send` 支持文本、文件、图片和可选 typing 状态，`wxb-mcp` 暴露 fetch/send/status/listUsers/analyzeMedia 工具，上传密钥和 CDN URL 继续只在 bridge 内部流转。当前 npm 已发布版本仍为 M12 beta。
 
 ## P0 能力范围
 
@@ -44,6 +44,22 @@ WeChat-iLink Bridge（`wxb`）是一个面向 AI Agent 的微信 iLink 本地桥
 - 本地文件不存在、目录路径、超过 `WX_MAX_UPLOAD_BYTES`、未知 MIME 或图片模式传入非图片文件时返回结构化错误。
 - stdout 不输出上传 URL、AES key、签名 query、bot token 或 context token。
 
+## M14 MCP Adapter
+
+- `wxb-mcp`：stdio MCP server，复用现有 core library 和本地状态目录。
+- MCP tools：`fetchMessages`、`sendText`、`sendFile`、`listUsers`、`status`、`analyzeMedia`。
+- Tool schema 不包含 `context_token`；Agent 只传账号、用户、文本或本地文件路径。
+- 媒体内容继续通过 `attachments[].path` 或本地 `filePath` 交付，不暴露 CDN URL、上传参数或 AES key。
+- 使用说明和客户端配置示例见 `docs/m14-mcp-adapter.md`。
+
+## M15 多模态辅助
+
+- `analyzeMedia`：检查本地媒体路径，返回 MIME、bytes、sha256、图片尺寸和 text-like 文件预览。
+- 图片问答、语音转写、视频摘要默认返回 `MULTIMODAL_HELPER_UNAVAILABLE` 降级结果；真实模型能力由 Agent 使用 `attachments[].path` 自行调用，或由自定义 adapter host 注入 optional helper。
+- 不需要模型 API key 时，bridge 的 fetch/send/媒体下载/媒体发送仍完整可用。
+- helper 失败不会修改 cursor、seen ID、context token 或消息历史。
+- 使用说明见 `docs/m15-multimodal-helper.md`。
+
 ## 从源码安装
 
 Windows PowerShell：
@@ -64,7 +80,7 @@ wxb help
 
 ## npm Beta 安装
 
-当前公开 beta 已可通过 `@dongh4o/wechat-ilink-bridge@beta` 安装：
+当前公开 beta 已可通过 `@dongh4o/wechat-ilink-bridge@beta` 安装，npm beta dist-tag 仍指向 `0.1.0-beta.1`：
 
 ```powershell
 npm.cmd install -g @dongh4o/wechat-ilink-bridge@beta
@@ -76,7 +92,7 @@ wxb status --json
 
 ```powershell
 npm.cmd pack
-npm.cmd install -g .\dongh4o-wechat-ilink-bridge-0.1.0-beta.1.tgz
+npm.cmd install -g .\dongh4o-wechat-ilink-bridge-0.2.0.tgz
 wxb help
 wxb status --json
 ```

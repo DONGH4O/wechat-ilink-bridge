@@ -7,6 +7,8 @@ description: Use this skill when an agent needs to receive WeChat messages or se
 
 Use the local `wxb` CLI to receive WeChat input and send text, file, or image messages through the iLink bridge. Keep all tool-facing output JSON-only, and treat `context_token`, upload URLs, and AES keys as internal implementation details managed by the bridge.
 
+If the host environment supports MCP tools, prefer the M14 `wxb-mcp` adapter for the same fetch/send/status/listUsers operations. It uses the same local state directory and keeps the same secret boundaries.
+
 For command schemas and error details, read [references/api.md](references/api.md).
 
 ## Standard Loop
@@ -46,6 +48,7 @@ Use `--account <accountId>` when multiple accounts are configured or when an err
 - `image`, `voice`, `file`, `video`, or `mixed` messages include metadata by default. If the media content is needed, run `wxb fetch --download-media --json` so the bridge can save attachments under the local inbox and return absolute paths in `attachments[]`.
 - When `attachments[]` is present, use the returned `path` directly. Do not infer paths, and do not ask for media secrets such as AES keys, CDN URLs, or signed query parameters.
 - If `download.ok` is false on a media item, continue processing any text in the message and ask the user for a text description only if the missing media is essential.
+- If MCP `analyzeMedia` is available, use it only as an optional helper for local metadata, text preview, or host-provided model assistance. If it returns `MULTIMODAL_HELPER_UNAVAILABLE` or `analysis.status: "failed"`, fall back to reading `attachments[].path` with the host Agent's own tools.
 - Long replies are split by the bridge. Keep replies natural and avoid sending many chunks unless the task truly needs detail.
 - Files and images must be local filesystem paths. Pass only the path to `wxb send --file` or `wxb send --image`; the bridge handles AES encryption, upload URL retrieval, CDN upload, media item creation, and local history.
 - Use `--typing` only when sending immediately visible user-facing replies where a typing indicator is helpful.

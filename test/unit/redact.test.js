@@ -10,6 +10,9 @@ test("redacts nested protocol secrets without mutating the source", () => {
     credentials: {
       token: "account_secret",
       contextToken: "ctx_secret",
+      hasContextToken: true,
+      openaiApiKey: "openai_secret",
+      clientSecret: "client_secret",
       media: [
         {
           aeskey: "00112233445566778899aabbccddeeff",
@@ -25,6 +28,9 @@ test("redacts nested protocol secrets without mutating the source", () => {
   assert.equal(redacted.bot_token, "[REDACTED]");
   assert.equal(redacted.credentials.token, "[REDACTED]");
   assert.equal(redacted.credentials.contextToken, "[REDACTED]");
+  assert.equal(redacted.credentials.hasContextToken, true);
+  assert.equal(redacted.credentials.openaiApiKey, "[REDACTED]");
+  assert.equal(redacted.credentials.clientSecret, "[REDACTED]");
   assert.equal(redacted.credentials.media[0].aeskey, "[REDACTED]");
   assert.equal(redacted.credentials.media[0].file_id, "image_file_001");
   assert.equal(source.bot_token, "bot_secret");
@@ -42,6 +48,10 @@ test("redacts bearer tokens in strings", () => {
   assert.equal(
     redactText("WX_BOT_TOKEN=secret-token bot_token=secret-token context_token: ctx-secret"),
     "WX_BOT_TOKEN=[REDACTED] bot_token=[REDACTED] context_token: [REDACTED]"
+  );
+  assert.equal(
+    redactText("openaiApiKey=sk-secret clientSecret: client-secret"),
+    "openaiApiKey=[REDACTED] clientSecret: [REDACTED]"
   );
 });
 

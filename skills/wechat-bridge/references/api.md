@@ -4,6 +4,8 @@
 
 `wxb` is a local CLI adapter around the iLink Bot API. It stores credentials, cursors, context tokens, seen message IDs, and message history under the configured state directory.
 
+M14 also provides `wxb-mcp`, a stdio MCP adapter around the same core library and state directory. Prefer `wxb-mcp` when the host Agent supports MCP tools; use the CLI commands below when MCP is unavailable.
+
 Configuration precedence is:
 
 ```text
@@ -17,6 +19,25 @@ Useful flags:
 | `--state-dir <path>` | Override the state directory for this command. |
 | `--account <accountId>` | Select one saved iLink account. |
 | `--json` | Keep output machine-readable. The current CLI already emits JSON. |
+
+## MCP Adapter
+
+```powershell
+wxb-mcp --state-dir "C:\tmp\wxb-test"
+```
+
+Tools:
+
+| Tool | Purpose |
+|---|---|
+| `fetchMessages` | Fetch one inbound batch; optional media download returns `attachments[].path`. |
+| `sendText` | Send text to a previously seen user by `userId` or local alias. |
+| `sendFile` | Send a local file or image path. |
+| `listUsers` | List locally known users, aliases, and whether a reply route is cached. |
+| `status` | Read local bridge status without calling iLink. |
+| `analyzeMedia` | Inspect local media metadata or use an optional host-provided multimodal helper. |
+
+MCP tool schemas do not accept `context_token`, bot token, upload URL, CDN URL, or AES key fields. Tool failures return `isError: true` with the same JSON error shape documented below.
 
 ## Login
 
@@ -375,3 +396,26 @@ Common errors:
 Default fetch may return `image`, `voice`, `file`, `video`, `mixed`, or `unknown` metadata without downloading the payload. Use `wxb fetch --download-media --json` when media content is needed.
 
 Downloaded media is saved under the configured state directory's `inbox`. Treat `attachments[].path` as the only media payload handoff. The bridge may infer common MIME types from downloaded bytes when the protocol omits them. Download failures do not block text processing; inspect `download.ok` and `mediaDownload.failed`.
+
+## Optional Multimodal Helper
+
+M15 adds MCP `analyzeMedia` for optional media assistance. It is not part of the required CLI path and does not require a model API key.
+
+```json
+{
+  "filePath": "C:\\tmp\\wxb-test\\inbox\\bot\\message-image.png",
+  "mode": "inspect"
+}
+```
+
+Modes:
+
+| Mode | Behavior |
+|---|---|
+| `inspect` | Return local metadata such as path, file name, bytes, MIME, kind, sha256, and image dimensions when available. |
+| `extractText` | Return a bounded preview for text-like files. |
+| `imageQuestion` | Use a host-provided helper if present; otherwise return `MULTIMODAL_HELPER_UNAVAILABLE`. |
+| `transcribeAudio` | Use a host-provided helper if present; otherwise return `MULTIMODAL_HELPER_UNAVAILABLE`. |
+| `summarizeVideo` | Use a host-provided helper if present; otherwise return `MULTIMODAL_HELPER_UNAVAILABLE`. |
+
+Do not pass model API keys through MCP tool arguments. If a helper fails, the tool returns `analysis.status: "failed"` and does not modify cursor, seen IDs, context token cache, or message history. Agents can always fall back to reading `attachments[].path` directly with their own model tools.

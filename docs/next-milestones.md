@@ -199,6 +199,8 @@ M8 之后项目已经具备可被 Agent 使用的核心闭环：
 
 ## 9. M14 P2 adapter
 
+状态：已完成本地 MCP adapter 首版。新增 `wxb-mcp` stdio server，暴露 `fetchMessages`、`sendText`、`sendFile`、`listUsers`、`status`，并补充 mock adapter 测试和 Agent 示例。详见 `docs/m14-mcp-adapter.md` 与 `docs/m14-validation-report.md`。
+
 目标：不改变 core library 的前提下，为 Agent 生态提供标准适配层。
 
 优先级建议：
@@ -220,6 +222,8 @@ M8 之后项目已经具备可被 Agent 使用的核心闭环：
 - 失败输出与 CLI 错误码一致。
 
 ## 10. M15 P2 多模态增强
+
+状态：已完成本地可选 helper 首版。新增 MCP `analyzeMedia` tool，可做本地媒体 metadata/text preview，并为图片问答、语音转写、视频摘要提供 host-provided helper 接入点与无 helper 降级结果。详见 `docs/m15-multimodal-helper.md` 与 `docs/m15-validation-report.md`。
 
 目标：提供可选增强，而不是把模型能力变成 bridge 必需依赖。
 

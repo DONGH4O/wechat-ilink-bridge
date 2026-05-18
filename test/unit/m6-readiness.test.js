@@ -2,14 +2,15 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 
-test("package metadata marks the M12 npm beta candidate", async () => {
+test("package metadata marks the M15 P2 release candidate", async () => {
   const manifest = JSON.parse(await readFile("package.json", "utf8"));
 
   assert.equal(manifest.name, "@dongh4o/wechat-ilink-bridge");
-  assert.equal(manifest.version, "0.1.0-beta.1");
+  assert.equal(manifest.version, "0.2.0");
   assert.equal(manifest.private, false);
   assert.equal(manifest.license, "MIT");
   assert.equal(manifest.bin.wxb, "src/cli/index.js");
+  assert.equal(manifest.bin["wxb-mcp"], "src/mcp/index.js");
   assert.equal("wxb-spike" in manifest.bin, false);
   assert.equal(manifest.scripts["pack:dry-run"], "npm pack --dry-run");
   assert.equal(manifest.scripts.spike, "node scripts/protocol-spike.js");
@@ -50,11 +51,11 @@ test("README documents Windows usage and M9 release expectations", async () => {
   assert.match(readme, /0\.1\.0-beta\.1/);
   assert.match(readme, /已可通过 `@dongh4o\/wechat-ilink-bridge@beta` 安装/);
   assert.match(readme, /npm\.cmd install -g @dongh4o\/wechat-ilink-bridge@beta/);
-  assert.match(readme, /dongh4o-wechat-ilink-bridge-0\.1\.0-beta\.1\.tgz/);
+  assert.match(readme, /dongh4o-wechat-ilink-bridge-0\.2\.0\.tgz/);
   assert.match(readme, /@dongh4o\/wechat-ilink-bridge/);
   assert.match(readme, /DONGH4O\/wechat-ilink-bridge/);
   assert.match(readme, /LICENSE/);
-  assert.match(readme, /只公开稳定 CLI bin `wxb`/);
+  assert.match(readme, /公开稳定 CLI bin `wxb` 和 P2 MCP adapter bin `wxb-mcp`/);
   assert.match(readme, /`wxb-spike` 不作为公开 bin 发布/);
   assert.match(readme, /完整 token/);
 });

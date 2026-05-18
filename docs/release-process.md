@@ -1,6 +1,6 @@
 # Release Process
 
-> Status: M12 npm beta release path.
+> Status: M15 P2 source release path.
 > Scope: This document defines the manual release path before GitHub automation exists.
 
 ## 1. Version Policy
@@ -18,9 +18,9 @@ Pre-release versions:
 - `0.1.0`: first stable P1 release.
 - `0.2.0`: first P2 adapter or optional multimodal helper release.
 
-Current M12 beta candidate:
+Current M15 P2 release candidate:
 
-- Version: `0.1.0-beta.1`.
+- Version: `0.2.0`.
 - Package name: `@dongh4o/wechat-ilink-bridge`.
 - npm scope: `@dongh4o` exists.
 - License: MIT in `LICENSE`.
@@ -37,7 +37,7 @@ Confirm these before changing the package to publishable state:
 Confirmed defaults:
 
 - Package: `@dongh4o/wechat-ilink-bridge`.
-- CLI bin: `wxb`.
+- Public bins: `wxb` and `wxb-mcp`.
 - Protocol spike helper: source-only maintenance script, not a public bin.
 - License: MIT.
 - Repository: public GitHub repo at `DONGH4O/wechat-ilink-bridge`.
@@ -123,10 +123,10 @@ wxb status --json
 For local smoke without changing the user's global prefix, use a temporary prefix:
 
 ```powershell
-$prefix="C:\tmp\wxb-m12-global"
-npm.cmd install -g --prefix $prefix .\dongh4o-wechat-ilink-bridge-0.1.0-beta.1.tgz
+$prefix="C:\tmp\wxb-p2-global"
+npm.cmd install -g --prefix $prefix .\dongh4o-wechat-ilink-bridge-0.2.0.tgz
 & "$prefix\wxb.cmd" help
-& "$prefix\wxb.cmd" status --json --state-dir "C:\tmp\wxb-m12-smoke-state"
+& "$prefix\wxb.cmd" status --json --state-dir "C:\tmp\wxb-p2-smoke-state"
 ```
 
 3. Publish beta:

@@ -6,6 +6,13 @@ This project follows semantic versioning after the first public package. Pre-`0.
 
 ## Unreleased
 
+- No changes yet.
+
+## 0.2.0 - 2026-05-18
+
+- Added M14 `wxb-mcp` stdio adapter with `fetchMessages`, `sendText`, `sendFile`, `listUsers`, and `status` tools.
+- Added MCP adapter tests and docs while preserving token-safe tool schemas and media handoff through local paths.
+- Added M15 optional `analyzeMedia` helper for local media metadata, text preview, host-provided multimodal hooks, and fail-soft degradation.
 - Added M13 CI matrix and stable-release readiness documentation.
 - Added troubleshooting guidance for install, login, sending, media, state, and safe debugging.
 

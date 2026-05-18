@@ -5,7 +5,8 @@ import test from "node:test";
 test("README documents M10 source installation and public repository safety", async () => {
   const readme = await readFile("README.md", "utf8");
 
-  assert.match(readme, /当前公开版本为 M12 npm beta/);
+  assert.match(readme, /当前源码版本为 `0\.2\.0`/);
+  assert.match(readme, /当前 npm 已发布版本仍为 M12 beta/);
   assert.match(readme, /M13 稳定版候选准备已完成/);
   assert.match(readme, /actions\/workflows\/ci\.yml\/badge\.svg/);
   assert.match(readme, /git clone https:\/\/github\.com\/DONGH4O\/wechat-ilink-bridge\.git/);
